@@ -22,16 +22,25 @@ namespace Svenkle.XMLTransformer
 
             if (source == null || transform == null)
             {
-                Console.WriteLine("Invalid command line arguments");
-                Console.WriteLine("Usage: Transformer.exe Source.config Transform.config Destination.config");
+                Console.WriteLine("Invalid command line parameters");
+                Console.WriteLine("Examples");
+                Console.WriteLine("Transformer.exe Source.config Transform.config");
+                Console.WriteLine("Transformer.exe Source.config Transform.*.config");
+                Console.WriteLine("Transformer.exe Source.config Transform.config Destination.config");
+                Console.WriteLine("Transformer.exe Source.config Transform.*.config Destination.config");
                 return -1;
             }
 
-            var result = destination != null ?
-                XmlTransformService.Transform(source, transform, destination) :
-                XmlTransformService.Transform(source, transform);
-
-            return result ? 1 : 0;
+            try
+            {
+                XmlTransformService.Transform(source, transform, destination);
+                return 0;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.Message);
+                return -1;
+            }
         }
     }
 }

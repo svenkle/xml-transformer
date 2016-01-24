@@ -1,4 +1,8 @@
-﻿using System.IO.Abstractions;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Text;
 using Microsoft.Web.XmlTransform;
 using Svenkle.XMLTransformer.Services.Interfaces;
 
@@ -15,35 +19,59 @@ namespace Svenkle.XMLTransformer.Services
             _xmlTransformationLogger = xmlTransformationLogger;
         }
 
-        public bool Transform(string source, string transform, string destination)
+        public void Transform(string source, string transform, string destination)
         {
-            string outputData;
-
-            using (var stream = _fileSystem.File.OpenRead(transform))
+            if (transform.Contains("*"))
             {
-                var sourceContent = _fileSystem.File.ReadAllText(source);
-                var xmlTransformation = new XmlTransformation(stream, _xmlTransformationLogger);
+                var directory = _fileSystem.Path.GetDirectoryName(transform);
+                var files = _fileSystem.Directory
+                    .GetFiles(string.IsNullOrEmpty(directory) ? "." : directory, transform)
+                    .Where(x => _fileSystem.Path.GetFileName(x) != source);
 
-                var xmlTransformableDocument = new XmlTransformableDocument
+                Transform(source, files, destination);
+            }
+            else
+            {
+                TransformXmlFile(source, transform, destination);
+            }
+        }
+        
+        private void Transform(string source, IEnumerable<string> transforms, string destination)
+        {
+            var sourceXml = _fileSystem.File.ReadAllText(source);
+
+            foreach (var transform in transforms)
+            {
+                var tranformXml = _fileSystem.File.ReadAllText(transform);
+                sourceXml = TranformXml(sourceXml, tranformXml);
+            }
+
+            _fileSystem.File.WriteAllText(destination, sourceXml);
+        }
+
+        private string TranformXml(string sourceXml, string transformXml)
+        {
+            var transformXmlBytes = Encoding.UTF8.GetBytes(transformXml);
+            using (var stream = new MemoryStream(transformXmlBytes))
+            {
+                var transformation = new XmlTransformation(stream, _xmlTransformationLogger);
+                var sourceDocument = new XmlTransformableDocument
                 {
                     PreserveWhitespace = true
                 };
 
-                xmlTransformableDocument.LoadXml(sourceContent);
-
-                xmlTransformation.Apply(xmlTransformableDocument);
-
-                outputData = xmlTransformableDocument.OuterXml;
+                sourceDocument.LoadXml(sourceXml);
+                transformation.Apply(sourceDocument);
+                return sourceDocument.OuterXml;
             }
-            
-            _fileSystem.File.WriteAllText(destination, outputData);
-
-            return true;
         }
 
-        public bool Transform(string source, string transform)
+        private void TransformXmlFile(string sourceFile, string transformFile, string destinationFile)
         {
-            return Transform(source, transform, source);
+            var transformedXml = TranformXml(_fileSystem.File.ReadAllText(sourceFile),
+                _fileSystem.File.ReadAllText(transformFile));
+
+            _fileSystem.File.WriteAllText(destinationFile, transformedXml);
         }
     }
 }
