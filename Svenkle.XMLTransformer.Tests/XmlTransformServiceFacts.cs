@@ -9,7 +9,7 @@ using Svenkle.XMLTransformer.Services;
 using Svenkle.XMLTransformer.Services.Interfaces;
 using Xunit;
 
-namespace Svenkle.TwoPly.Tests.Services
+namespace Svenkle.XMLTransformer.Tests
 {
     public class XmlTransformServiceFacts
     {
