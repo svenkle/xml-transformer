@@ -15,6 +15,7 @@ namespace Svenkle.XMLTransformer.Tests
     {
         private readonly IFileSystem _fileSystem;
         private readonly IXmlTransformService _xmlTransformService;
+        private const string BlankConfiguration = "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration><appSettings></appSettings></configuration>";
         private const string Configuration = "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration><appSettings><add key=\"Sample\" value=\"Default\"/></appSettings></configuration>";
         private const string ReplaceTransform = "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><appSettings><add key=\"Sample\" value=\"Debug\" xdt:Transform=\"Replace\"/></appSettings></configuration>";
         private const string InsertTransform = "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><appSettings><add key=\"Value\" value=\"Sample\" xdt:Transform=\"Insert\"/></appSettings></configuration>";
@@ -92,7 +93,7 @@ namespace Svenkle.XMLTransformer.Tests
                 var replaceTransformFile = _fileSystem.Path.GetRandomFileName();
                 var insertTransformFile = _fileSystem.Path.GetRandomFileName();
                 var destinationFile = _fileSystem.Path.GetRandomFileName();
-                _fileSystem.File.WriteAllText(sourceFile, Configuration);
+                _fileSystem.File.WriteAllText(sourceFile, BlankConfiguration);
                 _fileSystem.File.WriteAllText(replaceTransformFile, ReplaceTransform);
                 _fileSystem.File.WriteAllText(insertTransformFile, InsertTransform);
 
@@ -102,7 +103,6 @@ namespace Svenkle.XMLTransformer.Tests
                 var document = XDocument.Parse(_fileSystem.File.ReadAllText(destinationFile));
 
                 // Assert
-                Assert.Equal(document.Descendants("appSettings").Descendants("add").First().Attribute("value").Value, "Debug");
                 Assert.Equal(document.Descendants("appSettings").Descendants("add").Last().Attribute("value").Value, "Sample");
             }
 
@@ -110,22 +110,23 @@ namespace Svenkle.XMLTransformer.Tests
             public void TransformsAFileUsingAWildcardFilePath()
             {
                 // Prepare
+                const int transforms = 10;
                 var sourceFile = _fileSystem.Path.GetRandomFileName();
                 var replaceTransformFile = _fileSystem.Path.GetRandomFileName();
-                var insertTransformFile = _fileSystem.Path.GetRandomFileName();
                 var destinationFile = _fileSystem.Path.GetRandomFileName();
 
-                _fileSystem.File.WriteAllText(sourceFile, Configuration);
+                _fileSystem.File.WriteAllText(sourceFile, BlankConfiguration);
                 _fileSystem.File.WriteAllText(replaceTransformFile, ReplaceTransform);
-                _fileSystem.File.WriteAllText(insertTransformFile, InsertTransform);
+
+                for (var i = 0; i < transforms; i++)
+                    _fileSystem.File.WriteAllText(_fileSystem.Path.GetRandomFileName(), InsertTransform);
 
                 // Act
                 _xmlTransformService.Transform(sourceFile, "*", destinationFile);
                 var document = XDocument.Parse(_fileSystem.File.ReadAllText(destinationFile));
 
                 // Assert
-                Assert.Equal(document.Descendants("appSettings").Descendants("add").First().Attribute("value").Value, "Debug");
-                Assert.Equal(document.Descendants("appSettings").Descendants("add").Last().Attribute("value").Value, "Sample");
+                Assert.Equal(document.Descendants("appSettings").Descendants("add").Count(), transforms);
             }
 
             [Fact]
