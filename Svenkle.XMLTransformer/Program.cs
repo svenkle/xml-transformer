@@ -4,13 +4,12 @@ using System.Linq;
 using Microsoft.Web.XmlTransform;
 using Svenkle.XMLTransformer.Services;
 using Svenkle.XMLTransformer.Services.Interfaces;
-using XmlTransformationLogger = Svenkle.XMLTransformer.Services.XmlTransformationLogger;
 
 namespace Svenkle.XMLTransformer
 {
     internal static class Program
     {
-        private static readonly IXmlTransformationLogger XmlTransformationLogger = new XmlTransformationLogger();
+        private static readonly IXmlTransformationLogger XmlTransformationLogger = new Services.XmlTransformationLogger();
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IXmlTransformService XmlTransformService = new XmlTransformService(FileSystem, XmlTransformationLogger);
 
@@ -24,8 +23,6 @@ namespace Svenkle.XMLTransformer
             {
                 Console.WriteLine("Invalid command line parameters");
                 Console.WriteLine("Examples");
-                Console.WriteLine("Transformer.exe Source.config Transform.config");
-                Console.WriteLine("Transformer.exe Source.config Transform.*.config");
                 Console.WriteLine("Transformer.exe Source.config Transform.config Destination.config");
                 Console.WriteLine("Transformer.exe Source.config Transform.*.config Destination.config");
                 return -1;
