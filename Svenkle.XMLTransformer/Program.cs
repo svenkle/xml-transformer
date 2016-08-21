@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO.Abstractions;
-using System.Linq;
 using Microsoft.Web.XmlTransform;
 using Svenkle.XMLTransformer.Services;
 using Svenkle.XMLTransformer.Services.Interfaces;

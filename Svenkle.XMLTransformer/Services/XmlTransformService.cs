@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Web.XmlTransform;
 using Svenkle.XMLTransformer.Services.Interfaces;
 
@@ -19,59 +22,65 @@ namespace Svenkle.XMLTransformer.Services
             _xmlTransformationLogger = xmlTransformationLogger;
         }
 
-        public void Transform(string source, string transform, string destination)
+        public void Transform(string sourceFile, string tranformFile, string destinationFile)
         {
-            if (transform.Contains("*"))
+            if (tranformFile.Contains("*"))
             {
-                var directory = _fileSystem.Path.GetDirectoryName(transform);
+                var directory = _fileSystem.Path.GetDirectoryName(tranformFile);
                 var files = _fileSystem.Directory
-                    .GetFiles(string.IsNullOrEmpty(directory) ? "." : directory, transform)
-                    .Where(x => _fileSystem.Path.GetFileName(x) != source);
+                    .GetFiles(string.IsNullOrEmpty(directory) ? "." : directory, tranformFile)
+                    .Where(x => _fileSystem.Path.GetFileName(x) != sourceFile);
 
-                Transform(source, files, destination);
+                Transform(sourceFile, files, destinationFile);
             }
             else
             {
-                TransformXmlFile(source, transform, destination);
+                Transform(sourceFile, new[] { tranformFile }, destinationFile);
             }
         }
-        
-        private void Transform(string source, IEnumerable<string> transforms, string destination)
+
+        private void Transform(string sourceFile, IEnumerable<string> tranformFiles, string destinationFile)
         {
-            var sourceXml = _fileSystem.File.ReadAllText(source);
+            var sourceXmlString = _fileSystem.File.ReadAllText(sourceFile);
+            var sourceFileEncoding = GetEncoding(sourceXmlString);
+            var intermediateXmlString = sourceXmlString;
 
-            foreach (var transform in transforms)
+            foreach (var transformFile in tranformFiles)
             {
-                var tranformXml = _fileSystem.File.ReadAllText(transform);
-                sourceXml = TranformXml(sourceXml, tranformXml);
-            }
+                var sourceDocument = new XmlTransformableDocument();
+                var transformXmlString = _fileSystem.File.ReadAllText(transformFile);
+                var transformFileEncoding = GetEncoding(transformXmlString);
+                var transformXmlBytes = transformFileEncoding.GetBytes(transformXmlString);
 
-            _fileSystem.File.WriteAllText(destination, sourceXml);
-        }
-
-        private string TranformXml(string sourceXml, string transformXml)
-        {
-            var transformXmlBytes = Encoding.UTF8.GetBytes(transformXml);
-            using (var stream = new MemoryStream(transformXmlBytes))
-            {
-                var transformation = new XmlTransformation(stream, _xmlTransformationLogger);
-                var sourceDocument = new XmlTransformableDocument
+                using (var memoryStream = new MemoryStream(transformXmlBytes))
                 {
-                    PreserveWhitespace = true
-                };
-
-                sourceDocument.LoadXml(sourceXml);
-                transformation.Apply(sourceDocument);
-                return sourceDocument.OuterXml;
+                    var transformation = new XmlTransformation(memoryStream, _xmlTransformationLogger);
+                    sourceDocument.LoadXml(intermediateXmlString);
+                    transformation.Apply(sourceDocument);
+                    intermediateXmlString = sourceDocument.OuterXml;
+                }
             }
+
+            var xDocument = XDocument.Parse(intermediateXmlString, LoadOptions.PreserveWhitespace);
+            intermediateXmlString = $"{xDocument.Declaration}{Environment.NewLine}{xDocument.Document}";
+
+            _fileSystem.File.WriteAllText(destinationFile, intermediateXmlString, sourceFileEncoding);
         }
 
-        private void TransformXmlFile(string sourceFile, string transformFile, string destinationFile)
+        private static Encoding GetEncoding(string xmlString)
         {
-            var transformedXml = TranformXml(_fileSystem.File.ReadAllText(sourceFile),
-                _fileSystem.File.ReadAllText(transformFile));
-
-            _fileSystem.File.WriteAllText(destinationFile, transformedXml);
+            try
+            {
+                var xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(xmlString);
+                return xmlDocument.FirstChild.NodeType == XmlNodeType.XmlDeclaration ? 
+                    Encoding.GetEncoding(((XmlDeclaration)xmlDocument.FirstChild).Encoding) : 
+                    Encoding.UTF8;
+            }
+            catch (XmlException)
+            {
+                return Encoding.UTF8;
+            }
         }
     }
 }
