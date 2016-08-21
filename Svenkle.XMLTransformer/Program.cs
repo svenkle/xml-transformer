@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO.Abstractions;
-using System.Linq;
 using Microsoft.Web.XmlTransform;
 using Svenkle.XMLTransformer.Services;
 using Svenkle.XMLTransformer.Services.Interfaces;
@@ -15,29 +14,25 @@ namespace Svenkle.XMLTransformer
 
         private static int Main(string[] args)
         {
-            var source = args.ElementAtOrDefault(0);
-            var transform = args.ElementAtOrDefault(1);
-            var destination = args.ElementAtOrDefault(2);
-
-            if (source == null || transform == null)
+            if (args.Length == 3)
             {
-                Console.WriteLine("Invalid command line parameters");
-                Console.WriteLine("Examples");
-                Console.WriteLine("Transformer.exe Source.config Transform.config Destination.config");
-                Console.WriteLine("Transformer.exe Source.config Transform.*.config Destination.config");
-                return -1;
+                try
+                {
+                    XmlTransformService.Transform(args[0], args[1], args[2]);
+                    return 0;
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    return -1;
+                }
             }
 
-            try
-            {
-                XmlTransformService.Transform(source, transform, destination);
-                return 0;
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception.Message);
-                return -1;
-            }
+            Console.WriteLine("Invalid command line parameters");
+            Console.WriteLine("Examples");
+            Console.WriteLine("Transformer.exe Source.config Transform.config Destination.config");
+            Console.WriteLine("Transformer.exe Source.config Transform.*.config Destination.config");
+            return -1;
         }
     }
 }

@@ -2,6 +2,6 @@
 {
     public interface IXmlTransformService
     {
-        void Transform(string source, string transform, string destination);
+        void Transform(string sourceFile, string tranformFile, string destinationFile);
     }
 }

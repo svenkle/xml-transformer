@@ -17,53 +17,53 @@ namespace Svenkle.XMLTransformer.Services
 
         public void LogWarning(string message, params object[] messageArgs)
         {
-            Console.WriteLine("WARN " + message, messageArgs);
+            Console.WriteLine($"WARN {message}", messageArgs);
         }
 
         public void LogWarning(string file, string message, params object[] messageArgs)
         {
-            Console.WriteLine("WARN File {0}: ", file);
-            Console.WriteLine("WARN " + message, messageArgs);
+            Console.WriteLine($"WARN File {file}: ");
+            Console.WriteLine($"WARN {message}", messageArgs);
         }
 
         public void LogWarning(string file, int lineNumber, int linePosition, string message, params object[] messageArgs)
         {
-            Console.WriteLine("WARN File {0}, line {1}, position {2}: ", file, lineNumber, linePosition);
-            Console.WriteLine("WARN " + message, messageArgs);
+            Console.WriteLine($"WARN File {file}, line {lineNumber}, position {linePosition}: ");
+            Console.WriteLine($"WARN {message}", messageArgs);
         }
 
         public void LogError(string message, params object[] messageArgs)
         {
-            Console.WriteLine("ERROR" + message, messageArgs);
+            Console.WriteLine($"ERROR {message}", messageArgs);
         }
 
         public void LogError(string file, string message, params object[] messageArgs)
         {
-            Console.WriteLine("ERROR File {0}: ", file);
+            Console.WriteLine($"ERROR File {file}: ");
             Console.WriteLine("ERROR " + message, messageArgs);
         }
 
         public void LogError(string file, int lineNumber, int linePosition, string message, params object[] messageArgs)
         {
-            Console.WriteLine("ERROR File {0}, line {1}, position {2}: ", file, lineNumber, linePosition);
-            Console.WriteLine("ERROR " + message, messageArgs);
+            Console.WriteLine($"ERROR File {file}, line {lineNumber}, position {linePosition}: ");
+            Console.WriteLine($"ERROR {message}", messageArgs);
         }
 
         public void LogErrorFromException(Exception ex)
         {
-            Console.WriteLine("ERROR " + ex);
+            Console.WriteLine($"ERROR {ex}");
         }
 
         public void LogErrorFromException(Exception ex, string file)
         {
-            Console.WriteLine("ERROR File {0}: ", file);
-            Console.WriteLine("ERROR " + ex);
+            Console.WriteLine($"ERROR File {file}: ");
+            Console.WriteLine($"ERROR {ex}");
         }
 
         public void LogErrorFromException(Exception ex, string file, int lineNumber, int linePosition)
         {
-            Console.WriteLine("ERROR File {0}, line {1}, position {2}: ", file, lineNumber, linePosition);
-            Console.WriteLine("ERROR " + ex);
+            Console.WriteLine($"ERROR File {file}, line {lineNumber}, position {linePosition}: ");
+            Console.WriteLine($"ERROR {ex}");
         }
 
         public void StartSection(string message, params object[] messageArgs)
