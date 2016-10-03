@@ -23,6 +23,7 @@ namespace Svenkle.XMLTransformer.Tests
         private const string Configuration = "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration><appSettings><add key=\"Sample\" value=\"Default\"/></appSettings></configuration>";
         private const string ReplaceTransform = "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><appSettings><add key=\"Sample\" value=\"Debug\" xdt:Transform=\"Replace\"/></appSettings></configuration>";
         private const string InsertTransform = "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><appSettings><add key=\"Value\" value=\"Sample\" xdt:Transform=\"Insert\"/></appSettings></configuration>";
+        private const string InsertTransformNoEncoding = "<?xml version=\"1.0\"?><configuration xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><appSettings><add key=\"Value\" value=\"Sample\" xdt:Transform=\"Insert\"/></appSettings></configuration>";
         private const string InsertTransformUtf16 = "<?xml version=\"1.0\" encoding=\"utf-16\"?><configuration xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><appSettings><add key=\"Value\" value=\"Sample\" xdt:Transform=\"Insert\"/></appSettings></configuration>";
         private const string MalformedConfiguration = "<<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration><appSettings><add key=\"Sample\" value=\"Default\"/></appSettings></configuration>";
         private const string MalformedTransform = "<<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration xmlns:xdt=\"http://schemas.microsoft.com/XML-Document-Transform\"><appSettings><add key=\"Sample\" value=\"Debug\" xdt:Transform=\"Replace\"/></appSettings></configuration>";
@@ -152,6 +153,25 @@ namespace Svenkle.XMLTransformer.Tests
                 // Assert
                 Assert.True(xmlstring.Contains(XmlDeclararionHeaderUtf16));
             }
+
+            [Fact]
+            public void AssumesUtf8WhenNoEncodingSpecified()
+            {
+                // Prepare
+                var sourceFile = _fileSystem.Path.GetRandomFileName();
+                var insertTransformFile = _fileSystem.Path.GetRandomFileName();
+                var destinationFile = _fileSystem.Path.GetRandomFileName();
+                _fileSystem.File.WriteAllText(sourceFile, BlankConfiguration);
+                _fileSystem.File.WriteAllText(insertTransformFile, InsertTransformNoEncoding);
+
+                // Act
+                _xmlTransformService.Transform(sourceFile, insertTransformFile, destinationFile);
+                var xmlstring = _fileSystem.File.ReadAllText(destinationFile);
+
+                // Assert
+                Assert.True(xmlstring.Contains(XmlDeclararionHeader));
+            }
+
 
             [Fact]
             public void ThrowsAFileNotFoundExceptionIfTheSourceFileDoesntExist()

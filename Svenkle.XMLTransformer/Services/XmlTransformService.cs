@@ -67,15 +67,19 @@ namespace Svenkle.XMLTransformer.Services
             _fileSystem.File.WriteAllText(destinationFile, intermediateXmlString, sourceFileEncoding);
         }
 
-        private static Encoding GetEncoding(string xmlString)
+        private Encoding GetEncoding(string xmlString)
         {
             try
             {
                 var xmlDocument = new XmlDocument();
                 xmlDocument.LoadXml(xmlString);
-                return xmlDocument.FirstChild.NodeType == XmlNodeType.XmlDeclaration ? 
-                    Encoding.GetEncoding(((XmlDeclaration)xmlDocument.FirstChild).Encoding) : 
+                return xmlDocument.FirstChild.NodeType == XmlNodeType.XmlDeclaration ?
+                    Encoding.GetEncoding(((XmlDeclaration)xmlDocument.FirstChild).Encoding) :
                     Encoding.UTF8;
+            }
+            catch (ArgumentException)
+            {
+                return Encoding.UTF8;
             }
             catch (XmlException)
             {
