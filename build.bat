@@ -25,7 +25,7 @@ IF ERRORLEVEL 1 GOTO ERROR
 IF ERRORLEVEL 1 GOTO ERROR
 
 :: Build Xml Transformer
-"C:\Program Files (x86)\MSBuild\14.0\Bin\Msbuild.exe" /t:Rebuild .\Svenkle.XmlTransformer\Svenkle.XmlTransformer.csproj /p:Configuration=%1;OutputPath=.\..\build\
+"C:\Program Files (x86)\MSBuild\14.0\Bin\Msbuild.exe" /t:Rebuild .\Svenkle.XmlTransformer\Svenkle.XmlTransformer.csproj /p:Configuration=%1;OutputPath=.\..\artifacts\
 IF ERRORLEVEL 1 GOTO ERROR
 
 EXIT /b 0

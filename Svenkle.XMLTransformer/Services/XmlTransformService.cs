@@ -67,7 +67,7 @@ namespace Svenkle.XMLTransformer.Services
             _fileSystem.File.WriteAllText(destinationFile, intermediateXmlString, sourceFileEncoding);
         }
 
-        private Encoding GetEncoding(string xmlString)
+        private static Encoding GetEncoding(string xmlString)
         {
             try
             {

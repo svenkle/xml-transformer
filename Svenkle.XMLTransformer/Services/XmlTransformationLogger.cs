@@ -86,5 +86,4 @@ namespace Svenkle.XMLTransformer.Services
             Console.WriteLine(message, messageArgs);
         }
     }
-
 }
